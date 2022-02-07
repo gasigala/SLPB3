@@ -3,13 +3,13 @@ import numpy as np
 
 def makeDict():
     #make string of all letters
-    letters = list(string.ascii_lowercase)
+    letters = string.ascii_lowercase
 
     #add all bigrams to string 
-    letters.extend([i+b for i in letters for b in letters])
+    b_list = [i+b for i in letters for b in letters]
 
     #add all bigrams to dict and set initial count to 0
-    bigrams = dict.fromkeys(letters, 0)
+    bigrams = dict.fromkeys(b_list, 0)
     return bigrams
 
 def makeNgrams(ngramsDict, surname, N):
