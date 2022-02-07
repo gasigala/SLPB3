@@ -73,4 +73,19 @@ def trainTestSplit():
       count_total += count   
         
     
-trainTestSplit()
+def normalizeCounts(bigramDict):
+  #this assumes our dictionary is all bigrams
+  letters = string.ascii_lowercase
+  dictCount = dict()
+  #get the count of all bigrams that start with the letter a-z
+  for i in bigramDict.keys():
+    if i[0] not in dictCount:
+      dictCount[i[0]] = bigramDict[i]
+    else:
+      dictCount[i[0]] += bigramDict[i]
+#divide each bigram by the # of bigrams that start with a letter by the total number of bigrams that start with the same letter
+  for i in bigramDict.keys():
+    if bigramDict[i] != 0:
+      bigramDict[i] = bigramDict[i]/ dictCount[i[0]]
+
+  print(bigramDict)
