@@ -6,13 +6,13 @@ from sklearn.linear_model import LinearRegression
 
 def makeDict():
     #make string of all letters
-    letters = list(string.ascii_lowercase)
+    letters = string.ascii_lowercase
 
     #add all bigrams to string 
-    letters.extend([i+b for i in letters for b in letters])
+    b_list = [i+b for i in letters for b in letters]
 
     #add all bigrams to dict and set initial count to 0
-    bigrams = dict.fromkeys(letters, 0)
+    bigrams = dict.fromkeys(b_list, 0)
     return bigrams
 
 def makeNgrams(ngramsDict, surname, N):
@@ -44,7 +44,7 @@ def trainTestSplit():
   trainset = 'train-set.csv'
   devset = 'dev-set.csv'
   testset = 'test-set.csv'
-
+  
   count_total = 0
   with open(trainset, mode = "w", encoding = "utf-8") as output_file,\
       open(devset, mode = "w", encoding = "utf-8") as output_file2,\
