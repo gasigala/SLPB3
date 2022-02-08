@@ -22,6 +22,9 @@ def makeNgrams(ngramsDict, surname, N):
     for i in ngrams:
         ngramsDict[i] +=1
 
+def bigram_dict_to_matrix(bigram_dict):
+    return np.matrix(list(bigram_dict.values()))
+
 def trainTestSplit():
   #this will give us a count of the nationalities
   surname_dict = dict()
