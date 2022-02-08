@@ -15,19 +15,21 @@ def makeDict():
     bigrams = dict.fromkeys(b_list, 0)
     return bigrams
 
+
+
 def makeNgrams(ngramsDict, surname, N):
     #this method assumes that the possible combinations of our ngrams are already in
     #our dict
     ngrams =  [surname[i: j] for i in range(len(surname)) for j in range(i + 1, len(surname) + 1) if len(surname[i:j]) == N]
-    count = 0
     for i in ngrams:
         ngramsDict[i] +=1
-        count += 1
     
     
-
 def bigram_dict_to_matrix(bigram_dict):
     return np.matrix(list(bigram_dict.values()))
+
+def name_to_vec(name):
+    
 
 def trainTestSplit():
   #this will give us a count of the nationalities
@@ -165,4 +167,7 @@ if __name__ == "__main__":
     r = train_file.read()
     train_file.close()
     regr = train_reg()
-    print(regr)
+    c = regr.coef_
+    for i in range(32):
+        print(c[0][i])
+    
