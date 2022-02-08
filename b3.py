@@ -6,7 +6,7 @@ from sklearn.linear_model import LinearRegression
 
 def makeDict():
     #make string of all letters
-    letters = string.ascii_lowercase + "áéíóúüöß'ìã"
+    letters = string.ascii_lowercase + "áéóüöß'ìã"
 
     #add all bigrams to string 
     b_list = [i+b for i in letters for b in letters]
@@ -23,13 +23,13 @@ def makeNgrams(ngramsDict, surname, N):
     ngrams =  [surname[i: j] for i in range(len(surname)) for j in range(i + 1, len(surname) + 1) if len(surname[i:j]) == N]
     for i in ngrams:
         ngramsDict[i] +=1
-    
+    return ngramsDict
     
 def bigram_dict_to_matrix(bigram_dict):
     return np.matrix(list(bigram_dict.values()))
 
 def name_to_vec(name):
-    
+    return bigram_dict_to_matrix(makeNgrams(makeDict(), name, 2))
 
 def trainTestSplit():
   #this will give us a count of the nationalities
@@ -129,7 +129,7 @@ def train_reg():
     
     X = bigram_dict_to_matrix(name_dict)
     
-    X = normalizeMat(X)
+    #X = normalizeMat(X)
     
     for l in train_list:
         l = l.replace(" ",'')
@@ -156,18 +156,23 @@ def train_reg():
         
         X = np.concatenate((X,X1))
     
-    regr = LinearRegression().fit(np.asarray(X),np.asarray(y.transpose()))
+    regr = LinearRegression(copy_X=(True),fit_intercept=(True)).fit(np.asarray(X),np.asarray(y.transpose()))
     
     return regr
 
 
 if __name__ == "__main__":
-    trainTestSplit()
+    #uncomment to initialize the files
+    #trainTestSplit()
     train_file = open("train-set.csv",'r',encoding = 'utf-8')
     r = train_file.read()
     train_file.close()
     regr = train_reg()
-    c = regr.coef_
+    c = regr.coef_.max()
+    c2 = regr.coef_
     for i in range(32):
-        print(c[0][i])
-    
+        print(c2[0][i])
+    name = "einstein"
+    print(name)
+    print(regr.predict((name_to_vec(name.lower()))))
+    print(regr.predict(normalizeMat(name_to_vec(name.lower()))))
