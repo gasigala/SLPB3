@@ -43,7 +43,7 @@ def trainTestSplit():
 
   #make the file names were gonna write to
   #this popsup as a singular value for some reason
-  surname_dict.pop('"')
+  #surname_dict.pop('"')
   trainset = 'train-set.csv'
   devset = 'dev-set.csv'
   testset = 'test-set.csv'
@@ -92,3 +92,17 @@ def normalizeCounts(bigramDict):
       bigramDict[i] = bigramDict[i]/ dictCount[i[0]]
 
   print(bigramDict)
+
+def normalizeMat(bigramMat):
+    return bigramMat/bigramMat.sum()
+
+def train_reg():
+    train_file = open("train-set.csv",'r')
+    
+    train_list = train_file.read().split()
+    
+    return train_list
+
+
+if __name__ == "__main__":
+    regr = train_reg()
