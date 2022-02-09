@@ -6,36 +6,27 @@ from sklearn.linear_model import LinearRegression
 
 def makeDict():
     #make string of all letters
-    letters = list(string.ascii_lowercase)
-    #letters = string.ascii_lowercase
+    letters = string.ascii_lowercase + "áéóüöß'ìã"
 
     #add all bigrams to string 
-    bigram_lst = letters.extend([i+b for i in letters for b in letters if len(i+b)== 2])
+    b_list = [i+b for i in letters for b in letters]
 
     #add all bigrams to dict and set initial count to 0
-    bigrams = dict.fromkeys(letters, 0)
-
-    #out of vocabulary
-    bigrams['OOV'] = .5
-    
-    for i in string.ascii_lowercase:
-      bigrams.pop(i)
-    print(bigrams)
+    bigrams = dict.fromkeys(b_list, 0)
     return bigrams
+
+
 
 def makeNgrams(ngramsDict, surname, N):
     #this method assumes that the possible combinations of our ngrams are already in
     #our dict
     ngrams =  [surname[i: j] for i in range(len(surname)) for j in range(i + 1, len(surname) + 1) if len(surname[i:j]) == N]
     for i in ngrams:
-      if i in ngramsDict:
         ngramsDict[i] +=1
-      else:
-        ngramsDict['OOV']+=.01
     return ngramsDict
     
 def bigram_dict_to_matrix(bigram_dict):
-    return np.matrix(list(bigram_dict.values()))
+    return np.array([list(bigram_dict.values())])
 
 def name_to_vec(name):
     return bigram_dict_to_matrix(makeNgrams(makeDict(), name, 2))
@@ -161,7 +152,7 @@ def train_reg():
         
         X1 = bigram_dict_to_matrix(name_dict)
         
-        X1 = normalizeMat(X1)
+        #X1 = normalizeMat(X1)
         
         X = np.concatenate((X,X1))
     
@@ -180,7 +171,7 @@ if __name__ == "__main__":
     c = regr.coef_.max()
     c2 = regr.coef_
     
-    name = "cd"
+    name = "Puig"
     print(name)
     print(regr.predict((name_to_vec(name.lower()))))
     print(regr.predict(normalizeMat(name_to_vec(name.lower()))))
