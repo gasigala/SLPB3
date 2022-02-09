@@ -170,9 +170,15 @@ if __name__ == "__main__":
     regr = train_reg()
     c = regr.coef_.max()
     c2 = regr.coef_
-    for i in range(32):
-        print(c2[0][i])
-    name = "einstein"
+    
+    name = "cd"
     print(name)
     print(regr.predict((name_to_vec(name.lower()))))
     print(regr.predict(normalizeMat(name_to_vec(name.lower()))))
+    print("Shrinking magnitudes")
+    for i in range(len(regr.coef_[0])):
+        if regr.coef_[0][i] > 300 or regr.coef_[0][i] < -300:
+            regr.coef_[0][i] = 0
+    print(regr.predict((name_to_vec(name.lower()))))
+    print(regr.predict(normalizeMat(name_to_vec(name.lower()))))
+    
