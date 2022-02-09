@@ -6,23 +6,32 @@ from sklearn.linear_model import LinearRegression
 
 def makeDict():
     #make string of all letters
-    letters = string.ascii_lowercase + "áéóüöß'ìã"
+    letters = list(string.ascii_lowercase)
+    #letters = string.ascii_lowercase
 
     #add all bigrams to string 
-    b_list = [i+b for i in letters for b in letters]
+    bigram_lst = letters.extend([i+b for i in letters for b in letters if len(i+b)== 2])
 
     #add all bigrams to dict and set initial count to 0
-    bigrams = dict.fromkeys(b_list, 0)
+    bigrams = dict.fromkeys(letters, 0)
+
+    #out of vocabulary
+    bigrams['OOV'] = .5
+    
+    for i in string.ascii_lowercase:
+      bigrams.pop(i)
+    print(bigrams)
     return bigrams
-
-
 
 def makeNgrams(ngramsDict, surname, N):
     #this method assumes that the possible combinations of our ngrams are already in
     #our dict
     ngrams =  [surname[i: j] for i in range(len(surname)) for j in range(i + 1, len(surname) + 1) if len(surname[i:j]) == N]
     for i in ngrams:
+      if i in ngramsDict:
         ngramsDict[i] +=1
+      else:
+        ngramsDict['OOV']+=.01
     return ngramsDict
     
 def bigram_dict_to_matrix(bigram_dict):
