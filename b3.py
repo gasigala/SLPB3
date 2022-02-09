@@ -112,26 +112,8 @@ def train_reg():
     train_file = open("train-set.csv",'r',encoding = 'utf-8')
     
     train_list = train_file.read().split()
-    
-    base_dict = makeDict()
-    
-    name = train_list[0]
-    
-    name = name.replace(" ", '')
-    
-    names = name.split(",")
-    names[0] = names[0].lower()
-    if "Russian" == names[1]:
-        y = np.array([[1]])
-    else:
-        y = np.array([[0]])
-    
-    name_dict = dict.copy(base_dict)
-    
-    makeNgrams(name_dict, names[0], 2)
-    
-    X = bigram_dict_to_array(name_dict)
-    
+    X = np.empty((1,1226))
+    y = np.empty((1,1))
     #X = normalizeMat(X)
     
     for l in train_list:
@@ -149,11 +131,8 @@ def train_reg():
         else:
             y = np.concatenate((y,[[0]]),1)
         
-        name_dict = dict.copy(base_dict)
         
-        makeNgrams(name_dict, names[0], 2)
-        
-        X1 = bigram_dict_to_array(name_dict)
+        X1 = name_to_vec(names[0])
         
         #X1 = normalizeMat(X1)
         
