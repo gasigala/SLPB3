@@ -5,23 +5,18 @@ import sys
 from sklearn.linear_model import LinearRegression
 
 def makeDict():
-    #make string of all letters
-    letters = list(string.ascii_lowercase)
-    #letters = string.ascii_lowercase
+    letters =string.ascii_lowercase + "áéóüöß'ìã"
 
     #add all bigrams to string 
-    bigram_lst = letters.extend([i+b for i in letters for b in letters if len(i+b)== 2])
-
+    b_list = [i+b for i in letters for b in letters]
     #add all bigrams to dict and set initial count to 0
-    bigrams = dict.fromkeys(letters, 0)
+    bigrams = dict.fromkeys(b_list, 0)
 
     #out of vocabulary
     bigrams['OOV'] = .5
     
-    for i in string.ascii_lowercase:
-      bigrams.pop(i)
-    print(bigrams)
     return bigrams
+
 
 def makeNgrams(ngramsDict, surname, N):
     #this method assumes that the possible combinations of our ngrams are already in
@@ -139,6 +134,8 @@ def train_reg():
     X = bigram_dict_to_matrix(name_dict)
     
     #X = normalizeMat(X)
+
+    name_dict = dict.copy(base_dict)
     
     for l in train_list:
         l = l.replace(" ",'')
@@ -155,13 +152,12 @@ def train_reg():
         else:
             y = np.concatenate((y,[[0]]),1)
         
-        name_dict = dict.copy(base_dict)
         
         makeNgrams(name_dict, names[0], 2)
         
         X1 = bigram_dict_to_matrix(name_dict)
         
-        X1 = normalizeMat(X1)
+        #X1 = normalizeMat(X1)
         
         X = np.concatenate((X,X1))
     
