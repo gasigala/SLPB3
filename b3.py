@@ -9,7 +9,7 @@ def makeDict():
     letters = string.ascii_lowercase + "áéóüöß'ìã"
 
     #add all bigrams to string 
-    b_list = [i+b for i in letters for b in letters]
+    b_list = [i+b for i in letters for b in letters] + ['OOV']
 
     #add all bigrams to dict and set initial count to 0
     bigrams = dict.fromkeys(b_list, 0)
@@ -22,14 +22,17 @@ def makeNgrams(ngramsDict, surname, N):
     #our dict
     ngrams =  [surname[i: j] for i in range(len(surname)) for j in range(i + 1, len(surname) + 1) if len(surname[i:j]) == N]
     for i in ngrams:
-        ngramsDict[i] +=1
+        if i in ngramsDict:
+            ngramsDict[i] +=1
+        else:
+            ngramsDict['OOV']+=.01
     return ngramsDict
     
-def bigram_dict_to_matrix(bigram_dict):
+def bigram_dict_to_array(bigram_dict):
     return np.array([list(bigram_dict.values())])
 
 def name_to_vec(name):
-    return bigram_dict_to_matrix(makeNgrams(makeDict(), name, 2))
+    return bigram_dict_to_array(makeNgrams(makeDict(), name, 2))
 
 def trainTestSplit():
   #this will give us a count of the nationalities
@@ -119,15 +122,15 @@ def train_reg():
     names = name.split(",")
     names[0] = names[0].lower()
     if "Russian" == names[1]:
-        y = np.matrix([1])
+        y = np.array([[1]])
     else:
-        y = np.matrix([0])
+        y = np.array([[0]])
     
     name_dict = dict.copy(base_dict)
     
     makeNgrams(name_dict, names[0], 2)
     
-    X = bigram_dict_to_matrix(name_dict)
+    X = bigram_dict_to_array(name_dict)
     
     #X = normalizeMat(X)
     
@@ -150,7 +153,7 @@ def train_reg():
         
         makeNgrams(name_dict, names[0], 2)
         
-        X1 = bigram_dict_to_matrix(name_dict)
+        X1 = bigram_dict_to_array(name_dict)
         
         #X1 = normalizeMat(X1)
         
