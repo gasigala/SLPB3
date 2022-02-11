@@ -4,15 +4,26 @@ import pandas as pd
 import sys
 from sklearn.linear_model import LinearRegression
 
+_bigrams = []
+
+def get_sorted_bigram_list():
+    src_file = "train-set.csv"
+    src_stream = open(src_file,'r')
+    bigram_list = []
+    for ln in src_stream:
+        name = ln.lower().strip().replace(" ",'').split(",")[0]
+        for i in range(len(name)-1):
+            if len(name) > 1 and name[i:i+2] not in bigram_list:
+                bigram_list.append(name[i:i+2])
+    
+    bigram_list.sort()
+    return bigram_list
+    
+_bigrams = get_sorted_bigram_list() + ['OOV']
+
 def makeDict():
-    #make string of all letters
-    letters = string.ascii_lowercase + "áéóüöß'ìã"
-
-    #add all bigrams to string 
-    b_list = [i+b for i in letters for b in letters]
-
     #add all bigrams to dict and set initial count to 0
-    bigrams = dict.fromkeys(b_list, 0)
+    bigrams = dict.fromkeys(_bigrams, 0)
     return bigrams
 
 
@@ -22,14 +33,17 @@ def makeNgrams(ngramsDict, surname, N):
     #our dict
     ngrams =  [surname[i: j] for i in range(len(surname)) for j in range(i + 1, len(surname) + 1) if len(surname[i:j]) == N]
     for i in ngrams:
-        ngramsDict[i] +=1
+        if i in ngramsDict:
+            ngramsDict[i] +=1
+        else:
+            ngramsDict['OOV']+=.01
     return ngramsDict
     
-def bigram_dict_to_matrix(bigram_dict):
-    return np.matrix(list(bigram_dict.values()))
+def bigram_dict_to_array(bigram_dict):
+    return np.array([list(bigram_dict.values())])
 
 def name_to_vec(name):
-    return bigram_dict_to_matrix(makeNgrams(makeDict(), name, 2))
+    return bigram_dict_to_array(makeNgrams(makeDict(), name, 2))
 
 def trainTestSplit():
   #this will give us a count of the nationalities
@@ -107,29 +121,10 @@ def normalizeMat(bigramMat):
 
 def train_reg():
     train_file = open("train-set.csv",'r',encoding = 'utf-8')
-    
     train_list = train_file.read().split()
     
-    base_dict = makeDict()
-    
-    name = train_list[0]
-    
-    name = name.replace(" ", '')
-    
-    names = name.split(",")
-    names[0] = names[0].lower()
-    if "Russian" == names[1]:
-        y = np.matrix([1])
-    else:
-        y = np.matrix([0])
-    
-    name_dict = dict.copy(base_dict)
-    
-    makeNgrams(name_dict, names[0], 2)
-    
-    X = bigram_dict_to_matrix(name_dict)
-    
-    #X = normalizeMat(X)
+    X = np.empty((1,len(_bigrams)))
+    y = np.empty((1,1))
     
     for l in train_list:
         l = l.replace(" ",'')
@@ -146,13 +141,10 @@ def train_reg():
         else:
             y = np.concatenate((y,[[0]]),1)
         
-        name_dict = dict.copy(base_dict)
         
-        makeNgrams(name_dict, names[0], 2)
+        X1 = name_to_vec(names[0])
         
-        X1 = bigram_dict_to_matrix(name_dict)
-        
-        X1 = normalizeMat(X1)
+        #X1 = normalizeMat(X1)
         
         X = np.concatenate((X,X1))
     
@@ -162,23 +154,55 @@ def train_reg():
 
 
 if __name__ == "__main__":
+    np.random.seed(0x33)
     #uncomment to initialize the files
     #trainTestSplit()
-    train_file = open("train-set.csv",'r',encoding = 'utf-8')
-    r = train_file.read()
-    train_file.close()
     regr = train_reg()
-    c = regr.coef_.max()
-    c2 = regr.coef_
     
-    name = "cd"
-    print(name)
-    print(regr.predict((name_to_vec(name.lower()))))
-    print(regr.predict(normalizeMat(name_to_vec(name.lower()))))
-    print("Shrinking magnitudes")
-    for i in range(len(regr.coef_[0])):
-        if regr.coef_[0][i] > 300 or regr.coef_[0][i] < -300:
-            regr.coef_[0][i] = 0
-    print(regr.predict((name_to_vec(name.lower()))))
-    print(regr.predict(normalizeMat(name_to_vec(name.lower()))))
+    THRESHOLD = .5
+    
+    eval_name = 'dev-set.csv'
+    print("Predicting on file" + eval_name)
+    
+    #tp - true positives
+    #fp - false positives
+    #tn - true negatives
+    #fn - false negatives
+    tp,fp,tn,fn = 0,0,0,0
+    #keep track of the max and minimum model predictions.
+    max_pred,min_pred = 0,0
+    eval_results = []
+    eval_file = open(eval_name,'r')
+    
+    for eval_ln in eval_file:
+        ln_data = eval_ln.strip().replace(" ",'').split(",")
+        expected = int(ln_data[1] == "Russian")
+        name_vec = name_to_vec(ln_data[0].lower())
+        #Returns a nested array, this unwraps it.
+        pred = regr.predict(name_vec)[0][0]
+        actual = int(pred > THRESHOLD)
+        max_pred = {True:pred,False:max_pred}[pred > max_pred]
+        min_pred = {True:pred,False:min_pred}[pred < min_pred]
+        #Use bool -> int cast to figure out place on confusion table.
+        tp += expected == 1 and actual == 1
+        fp += expected == 0 and actual == 1
+        fn += expected == 1 and actual == 0
+        tn += expected == 0 and actual == 0
+        #Use this line if you want to store the prediction
+        #eval_results.append((ln_data[0],expected,actual,pred))
+        #Else, use this line
+        eval_results.append((ln_data[0],expected,actual,pred))
+    eval_file.close()
+    total = tp + tn + fp + fn
+    
+    print((tp,tn,fp,fn))
+    acc = (tp+tn)/total
+    recall = tp / (tp + fn)
+    precision = tp / (tp + fp)
+    print((tp,tn,fp,fn))
+    print("accuracy: ",acc)
+    print("recall: ",recall)
+    print("precision: ", precision)
+    
+    
     
